@@ -18,7 +18,7 @@ const pointCount = pointAreas.length;
 
 let forLoopCount = 0;
 
-while (forLoopCount < (worldSize * worldSize) / 2) {
+while (whileLoopCount < (worldSize * worldSize) / 2) {
   for (let i = 0; i < pointAreas.length; i++) {
     if (pointAreas.length <= 0) break;
 
@@ -64,7 +64,7 @@ while (forLoopCount < (worldSize * worldSize) / 2) {
 
     if (workingPoints.length > 0) pointAreas.push(workingPoints);
   }
-  forLoopCount++;
+  whileLoopCount++;
 
   if (pointAreas.length <= 0) break;
 }

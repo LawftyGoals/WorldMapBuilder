@@ -7,36 +7,47 @@ const emptyMap = worldGenerator(worldSize);
 
 const generatedPoints = continentPoint(emptyMap);
 
-const areaExpansionMap = structuredClone(generatedPoints["continentPointMap"]);
-const pointAreas = [];
-
-generatedPoints["continentPoints"].forEach((block, index) => {
-  pointAreas.push(checkAvailableSurroundingsLimited(block));
-});
+const areaExpansionMap = generatedPoints["continentPointMap"];
+const pointAreas = generatedPoints["continentPoints"].map((block) =>
+  checkAvailableSurroundingsLimited(block)
+);
 
 const pointCount = pointAreas.length;
 
-let forLoopCount = 0;
+const colors = new Array(pointCount)
+  .fill(null)
+  .map(
+    (_) =>
+      `rgb(${getRandomInt(255)}, ${getRandomInt(255)}, ${getRandomInt(255)})`
+  );
 
-while (forLoopCount < (worldSize * worldSize) / 2) {
+let whileLoopCount = 0;
+
+while (whileLoopCount < (worldSize * worldSize) / 2) {
   for (let i = 0; i < pointAreas.length; i++) {
     if (pointAreas.length <= 0) break;
 
     let workingPoints = pointAreas.shift();
 
     workingPoints = workingPoints.filter((block) => {
-      return areaExpansionMap[block.x][block.y] === 0;
+      return areaExpansionMap[block.x][block.y]["pointIndex"] === 0;
     });
+
+    //console.log(workingPoints);
 
     if (workingPoints.length <= 0) continue;
 
     let randomIndex = getRandomInt(workingPoints.length - 1, "floor");
 
     let selectedIndex = workingPoints[randomIndex];
+    //console.log(selectedIndex);
 
-    areaExpansionMap[selectedIndex.x][selectedIndex.y] =
-      selectedIndex.blockIndex;
+    areaExpansionMap[selectedIndex.x][selectedIndex.y]["pointIndex"] =
+      selectedIndex.pointIndex;
 
+    //console.log(
+    //  areaExpansionMap[selectedIndex.x][selectedIndex.y]["pointIndex"]
+    //);
     workingPoints = workingPoints.filter(
       (_, index) => !(index === randomIndex)
     );
@@ -59,39 +70,32 @@ while (forLoopCount < (worldSize * worldSize) / 2) {
     });
 
     workingPoints = workingPoints.filter((block) => {
-      return areaExpansionMap[block.x][block.y] === 0;
+      return areaExpansionMap[block.x][block.y]["pointIndex"] === 0;
     });
 
     if (workingPoints.length > 0) pointAreas.push(workingPoints);
   }
-  forLoopCount++;
+  whileLoopCount++;
 
   if (pointAreas.length <= 0) break;
 }
 
 let tbody = document.querySelector("#tableBody");
 
-const colors = new Array(pointCount)
-  .fill(null)
-  .map(
-    (_, index) =>
-      `rgb(${getRandomInt(255)}, ${getRandomInt(255)}, ${getRandomInt(255)})`
-  );
-
-console.log(colors);
 areaExpansionMap.forEach((row, rIndex) => {
   let tRow = document.createElement("tr");
   tRow.id = "tableRow" + rIndex;
 
   row.forEach((block, bIndex) => {
+    console.log(block);
     let tCell = document.createElement("td");
     tCell.id = "tableCell" + bIndex;
     tCell.style.width = "16px";
     tCell.style.textAlign = "center";
-    tCell.style.backgroundColor = colors[block - 1];
+    tCell.style.backgroundColor = colors[block.pointIndex - 1];
 
     tCell.appendChild(
-      document.createTextNode(block.toString().padStart(3, " "))
+      document.createTextNode(block.pointIndex.toString().padStart(3, " "))
     );
 
     tRow.appendChild(tCell);
@@ -143,34 +147,34 @@ function checkAvailableSurroundingsLimited(block) {
 
   switch (block.x) {
     case 0:
-      if (areaExpansionMap[block.x + 1][block.y] === 0)
+      if (areaExpansionMap[block.x + 1][block.y]["pointIndex"] === 0)
         availableNeighbors.push({ ...block, x: block.x + 1 });
       break;
     case worldSize - 1:
-      if (areaExpansionMap[block.x - 1][block.y] === 0)
+      if (areaExpansionMap[block.x - 1][block.y]["pointIndex"] === 0)
         availableNeighbors.push({ ...block, x: block.x - 1 });
       break;
     default:
       for (let i = 0; i < 2; i++) {
         let blockX = block.x + plusOrMinus(i);
-        if (areaExpansionMap[blockX][block.y] === 0)
+        if (areaExpansionMap[blockX][block.y]["pointIndex"] === 0)
           availableNeighbors.push({ ...block, x: blockX });
       }
   }
 
   switch (block.y) {
     case 0:
-      if (areaExpansionMap[block.x][block.y + 1] === 0)
+      if (areaExpansionMap[block.x][block.y + 1]["pointIndex"] === 0)
         availableNeighbors.push({ ...block, y: block.y + 1 });
       break;
     case worldSize - 1:
-      if (areaExpansionMap[block.x][block.y - 1] === 0)
+      if (areaExpansionMap[block.x][block.y - 1]["pointIndex"] === 0)
         availableNeighbors.push({ ...block, y: block.y - 1 });
       break;
     default:
       for (let i = 0; i < 2; i++) {
         let blockY = block.y + plusOrMinus(i);
-        if (areaExpansionMap[block.x][blockY] === 0)
+        if (areaExpansionMap[block.x][blockY]["pointIndex"] === 0)
           availableNeighbors.push({ ...block, y: blockY });
       }
   }
@@ -181,6 +185,7 @@ function checkAvailableSurroundingsLimited(block) {
 function outerBlockCheck(blockValue) {
   return blockValue - (blockValue === 0 ? 0 : 1);
 }
+
 function blockCheckSize(axisValue) {
   return axisValue === 0 || axisValue === worldSize - 1 ? 2 : 3;
 }
@@ -198,22 +203,33 @@ function getAreaExpansionMapForWrite(map) {
 }
 
 function worldGenerator(size) {
-  const world = new Array(size).fill(new Array(size).fill(null));
+  const world = [];
+  for (let i = 0; i < size; i++) {
+    world.push(new Array(size).fill(null));
+  }
   return world;
 }
 
 function continentPoint(map) {
-  const continentPointMap = structuredClone(map);
+  const continentPointMap = map;
   const continentPoints = [];
-  let blockIndex = 1;
+  let pointIndex = 1;
   continentPointMap.forEach((row, rIndex) => {
     row.forEach((_block, bIndex) => {
       if (getRandomInt(worldSize * worldSize) < numberOfContinents) {
-        continentPointMap[rIndex][bIndex] = blockIndex;
-        continentPoints.push({ blockIndex, x: rIndex, y: bIndex });
-        blockIndex += 1;
+        continentPointMap[rIndex][bIndex] = {
+          pointIndex: pointIndex,
+          x: rIndex,
+          y: bIndex,
+        };
+        continentPoints.push({ pointIndex: pointIndex, x: rIndex, y: bIndex });
+        pointIndex += 1;
       } else {
-        continentPointMap[rIndex][bIndex] = 0;
+        continentPointMap[rIndex][bIndex] = {
+          pointIndex: 0,
+          x: rIndex,
+          y: bIndex,
+        };
       }
     });
   });
