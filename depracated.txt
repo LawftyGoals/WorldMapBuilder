@@ -1,0 +1,17 @@
+function parseContinentPoints(points) {
+  console.log(points);
+  for (let block of points) {
+    console.log(block);
+    const availableNeighborCount = block["availableNeighbors"].length;
+    const accumulatedNeighbors = [];
+
+    for (let i = 0; i < availableNeighborCount; i++) {
+      const currentBlock = block["availableNeighbors"].pop();
+      accumulatedNeighbors.push(
+        ...getAvailableNeighbors(getLimitedSurroundings(currentBlock))
+      );
+    }
+
+    block["availableNeighbors"].push(...accumulatedNeighbors);
+  }
+}
