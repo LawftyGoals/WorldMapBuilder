@@ -17,7 +17,7 @@ const pointCount = pointAreas.length;
 const colors = new Array(pointCount)
   .fill(null)
   .map(
-    (_) =>
+    () =>
       `rgb(${getRandomInt(255)}, ${getRandomInt(255)}, ${getRandomInt(255)})`
   );
 

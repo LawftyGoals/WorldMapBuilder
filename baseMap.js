@@ -1,3 +1,5 @@
+import { getRandomInt } from "./helperFunctions.js";
+
 const worldSize = 100;
 const numberOfContinents = 6;
 
@@ -8,11 +10,16 @@ const blockTemplate = {
   elevation: null,
 };
 
-const workingMap = mapGenerator(worldSize);
+let workingMap;
 
 const continentPoints = [];
 
-addContinentPoints(workingMap);
+export default function buildBaseMap() {
+  workingMap = mapGenerator(worldSize);
+  addContinentPoints(workingMap);
+  spreadContinents();
+  return { workingMap, continentPoints };
+}
 
 function mapGenerator(size) {
   const mapBase = [];
@@ -71,23 +78,25 @@ function getSurroundingsAndAvailableNeighbors(block) {
   return getAvailableNeighbors(getLimitedSurroundings(block));
 }
 
-function getRandomInt(size) {
-  return Math.floor(Math.random() * size);
-}
-
 function chooseAvailableNeighbor(point) {
-  const chosenPoint = point["availableNeighbors"].splice(
-    getRandomInt(point["availableNeighbors"].length),
-    1
-  )[0];
-
-  chosenPoint["continentValue"] = point["pointIndex"];
-
-  point["availableNeighbors"].push(
-    ...getSurroundingsAndAvailableNeighbors(chosenPoint)
+  point["availableNeighbors"] = point["availableNeighbors"].filter(
+    (block) => block["continentValue"] === null
   );
 
-  point["occupiedPoints"].push(chosenPoint);
+  if (point["availableNeighbors"].length > 0) {
+    const chosenPoint = point["availableNeighbors"].splice(
+      getRandomInt(point["availableNeighbors"].length),
+      1
+    )[0];
+
+    chosenPoint["continentValue"] = point["pointIndex"];
+
+    point["availableNeighbors"].push(
+      ...getSurroundingsAndAvailableNeighbors(chosenPoint)
+    );
+
+    point["occupiedPoints"].push(chosenPoint);
+  }
 }
 
 function checkPointsNeighbors() {
@@ -110,7 +119,3 @@ function spreadContinents() {
     }
   }
 }
-
-spreadContinents();
-
-console.log(workingMap);
