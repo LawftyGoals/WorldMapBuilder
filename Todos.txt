@@ -1,0 +1,3 @@
+Merge neighbor functions in baseMap
+
+Convert continent points from array to map??

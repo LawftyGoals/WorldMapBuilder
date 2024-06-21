@@ -1,7 +1,7 @@
 import { getRandomInt } from "./helperFunctions.js";
 
-const worldSize = 100;
-const numberOfContinents = 6;
+let worldSize;
+let numberOfContinents;
 
 const blockTemplate = {
   x: null,
@@ -14,10 +14,15 @@ let workingMap;
 
 const continentPoints = [];
 
-export default function buildBaseMap() {
+export default function buildBaseMap(size = 100, continentCount = 6) {
+  worldSize = size;
+  numberOfContinents = continentCount;
+
   workingMap = mapGenerator(worldSize);
   addContinentPoints(workingMap);
   spreadContinents();
+
+  console.log(continentPoints);
   return { workingMap, continentPoints };
 }
 
@@ -33,12 +38,21 @@ function mapGenerator(size) {
   return mapBase;
 }
 
+const continentTemplate = {
+  pointIndex: null,
+  occupiedPoints: null,
+  availableNeighbors: null,
+  neighborContinents: [],
+  movementDirection: null,
+};
+
 function addContinentPoints(map) {
   for (let pointIndex = 1; pointIndex <= numberOfContinents; pointIndex++) {
     const x = getRandomInt(worldSize);
     const y = getRandomInt(worldSize);
     map[y][x]["continentValue"] = pointIndex;
     continentPoints.push({
+      ...continentTemplate,
       pointIndex,
       occupiedPoints: [map[y][x]],
       availableNeighbors: [...getSurroundingsAndAvailableNeighbors(map[y][x])],
@@ -74,6 +88,8 @@ function getLimitedSurroundings(block) {
   return neighbors;
 }
 
+//TODO See if you can merge these two functions instead, looks like you could just put the
+//.filter function in the getLimitedSurroundings
 function getSurroundingsAndAvailableNeighbors(block) {
   return getAvailableNeighbors(getLimitedSurroundings(block));
 }
