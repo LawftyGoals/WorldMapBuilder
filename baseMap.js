@@ -8,11 +8,12 @@ const blockTemplate = {
   y: null,
   continentValue: null,
   elevation: null,
+  movementDirection: null,
 };
 
 let workingMap;
 
-const continentPoints = [];
+const continentPoints = new Map();
 
 export default function buildBaseMap(size = 100, continentCount = 6) {
   worldSize = size;
@@ -20,9 +21,11 @@ export default function buildBaseMap(size = 100, continentCount = 6) {
 
   workingMap = mapGenerator(worldSize);
   addContinentPoints(workingMap);
+
   spreadContinents();
 
   console.log(continentPoints);
+
   return { workingMap, continentPoints };
 }
 
@@ -42,7 +45,7 @@ const continentTemplate = {
   pointIndex: null,
   occupiedPoints: null,
   availableNeighbors: null,
-  neighborContinents: [],
+  neighborContinents: null,
   movementDirection: null,
 };
 
@@ -51,11 +54,12 @@ function addContinentPoints(map) {
     const x = getRandomInt(worldSize);
     const y = getRandomInt(worldSize);
     map[y][x]["continentValue"] = pointIndex;
-    continentPoints.push({
+    continentPoints.set(pointIndex, {
       ...continentTemplate,
       pointIndex,
       occupiedPoints: [map[y][x]],
       availableNeighbors: [...getSurroundingsAndAvailableNeighbors(map[y][x])],
+      neighborContinents: new Set(),
     });
   }
 }
@@ -118,7 +122,7 @@ function chooseAvailableNeighbor(point) {
 function checkPointsNeighbors() {
   let empty = true;
 
-  for (let point of continentPoints) {
+  for (let point of continentPoints.values()) {
     if (point["availableNeighbors"].length > 0) {
       empty = false;
       break;
@@ -129,7 +133,7 @@ function checkPointsNeighbors() {
 
 function spreadContinents() {
   while (!checkPointsNeighbors()) {
-    for (let point of continentPoints) {
+    for (let point of continentPoints.values()) {
       if (point["availableNeighbors"].length > 0)
         chooseAvailableNeighbor(point);
     }

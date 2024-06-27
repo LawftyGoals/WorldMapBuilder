@@ -3,7 +3,7 @@ import { getRandomInt } from "./helperFunctions.js";
 
 const { workingMap, continentPoints } = buildBaseMap(100, 4);
 
-const colors = new Array(continentPoints.length)
+const colors = new Array(continentPoints.size)
   .fill(null)
   .map(
     () =>
