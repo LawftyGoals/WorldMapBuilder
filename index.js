@@ -1,7 +1,8 @@
 import buildBaseMap from "./baseMap.js";
 import { getRandomInt } from "./helperFunctions.js";
+const worldSize = 100;
 
-const { workingMap, continentPoints } = buildBaseMap(100, 4);
+const { workingMap, continentPoints } = buildBaseMap(worldSize, 4);
 
 const colors = new Array(continentPoints.size)
   .fill(null)

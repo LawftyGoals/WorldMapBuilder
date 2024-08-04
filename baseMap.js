@@ -8,8 +8,12 @@ const blockTemplate = {
   y: null,
   continentValue: null,
   elevation: null,
-  movementDirection: null,
+  borderBlock: false,
 };
+
+const cardinalDirections = ["n", "ne", "e", "se", "s", "sw", "w", "nw"];
+
+const borderLines = new Set();
 
 let workingMap;
 
@@ -23,8 +27,7 @@ export default function buildBaseMap(size = 100, continentCount = 6) {
   addContinentPoints(workingMap);
 
   spreadContinents();
-
-  console.log(continentPoints);
+  console.log(borderLines);
 
   return { workingMap, continentPoints };
 }
@@ -60,6 +63,8 @@ function addContinentPoints(map) {
       occupiedPoints: [map[y][x]],
       availableNeighbors: [...getSurroundingsAndAvailableNeighbors(map[y][x])],
       neighborContinents: new Set(),
+      movementDirection:
+        cardinalDirections[getRandomInt(cardinalDirections.length)],
     });
   }
 }
@@ -99,9 +104,15 @@ function getSurroundingsAndAvailableNeighbors(block) {
 }
 
 function chooseAvailableNeighbor(point) {
-  point["availableNeighbors"] = point["availableNeighbors"].filter(
-    (block) => block["continentValue"] === null
-  );
+  point["availableNeighbors"] = point["availableNeighbors"].filter((block) => {
+    if (block["continentValue"] !== null) {
+      point["neighborContinents"].add(block["continentValue"]);
+      block["borderBlock"] = true;
+      return false;
+    }
+
+    return true;
+  });
 
   if (point["availableNeighbors"].length > 0) {
     const chosenPoint = point["availableNeighbors"].splice(

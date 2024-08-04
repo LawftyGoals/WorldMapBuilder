@@ -1,3 +1,5 @@
 Merge neighbor functions in baseMap
 
-Convert continent points from array to map??
+Convert continent points from array to map?? Check
+
+do something to find the points along the border.
